@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect
-
+from django.contrib import messages
 # Create your views here.
 
 from django.http import HttpResponse
 from django.db.models import Q
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
 from .models import Room, Topic
 from .forms import RoomForm
 
@@ -12,6 +14,31 @@ from .forms import RoomForm
     {'id': 2, 'name': 'Design with me'},
     {'id': 3, 'name': 'FrontEnd Developers!'},
 ]'''
+
+def loginPage(request): # Only 'login' is an inbuilt function so use something else. eg. loginPage() here.
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        try:
+            user = User.objects.get(username = username)
+        except:
+            messages.error(request, 'User does not exist.')
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'Username or password does not exist')
+
+    context = {}
+
+    return render(request, 'base/login_register.html', context)
+
+def logoutUser(request):
+    logout(request)
+    return redirect('home')
 
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''

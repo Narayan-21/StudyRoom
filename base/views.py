@@ -22,7 +22,7 @@ def loginPage(request): # Only 'login' is an inbuilt function so use something e
         return redirect('home')
 
     if request.method == 'POST':
-        username = request.POST.get('username')
+        username = request.POST.get('username').lower()
         password = request.POST.get('password')
 
         try:
@@ -52,7 +52,13 @@ def registerPage(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False) # Return the object that has not been saved to the datebase yet.
-
+            # Kind of taking a snapshot.
+            user.username = user.username.lower()
+            user.save()
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'An Error occured during registration.')
     context = {'form':form}
     return render(request, 'base/login_register.html', context)
 
